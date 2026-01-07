@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>For My Babyy</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div id="loading-screen">
+    <iframe 
+      src="heart/dist/index.html"
+      frameborder="0"
+      allowfullscreen
+    ></iframe>
+  </div>
+
+
+  <div id="desktop-wrapper">
+     <div id="wallpaper">
+       <video id="bg-video" autoplay muted loop playsinline>
+         <source src="assets/video/bg.mp4" type="video/mp4" />
+       </video>
+     </div>
+
+     <div id="desktop">
+       <div class="desktop-icons" id="desktopIcons"></div>
+     </div>
+  </div>
+
+
+  <div id="startMenu">
+    <div class="start-header">
+      <div class="profile-icon">💖</div>
+      <div>
+        <div class="greeting">Hello Madam jii</div>
+      </div>
+    
+    </div>
+
+    <div class="section-title">All Apps</div>
+    <div class="apps-grid" id="appsGrid"></div>
+<!--    <div class="app-grid">
+      <div class="app"><div class="app-icon">💌</div><span>Love Letters</span></div>
+      <div class="app"><div class="app-icon">📸</div><span>Specials</span></div>
+      <div class="app"><div class="app-icon">🎵</div><span>Our Playlist</span></div>
+      <div class="app"><div class="app-icon">📝</div><span>Notes For You</span></div>
+      <div class="app"><div class="app-icon">📅</div><span>Date Ideas</span></div>
+      <div class="app"><div class="app-icon">🎂</div><span>Birthday Wishes</span></div>
+      <div class="app"><div class="app-icon">💝</div><span>Love Quotes</span></div>
+      <div class="app"><div class="app-icon">📁</div><span>File Manager</span></div>
+    </div> -->
+
+
+    <div class="start-footer">
+      <span>👤 Profile</span>
+      <span>⚙️ Settings</span>
+      <span>⏻ Power</span>
+    </div>
+
+
+  </div>
+
+  <div id="taskbar">
+    <div id="taskbar-left">
+      <!-- Start button, search icon, task tabs -->
+       <div id="startBtn">
+         <span class="start-text">Start</span>
+         <span class="heart">♡</span>
+       </div>
+       <div class="search-icon"></div>
+       <div id="taskApps"></div>
+    </div>
+
+
+
+
+    <div id="taskbar-right">
+      <!-- system icons + time -->
+      <div class="system-tray">
+      <!-- SVG icons go here -->
+      <div class="tray-icon">
+        <!-- wifi -->
+        <svg viewBox="0 0 24 24">
+          <path d="M2 8c5.5-4.5 14.5-4.5 20 0" />
+          <path d="M5 11c4-3 10-3 14 0" />
+          <path d="M8 14c2.5-2 5.5-2 8 0" />
+          <circle cx="12" cy="18" r="1.5" />
+        </svg>
+      </div>
+
+      <div class="tray-icon">
+        <!-- bluetooth -->
+        <svg viewBox="0 0 24 24">
+          <path d="M12 2v20l6-6-6-6 6-6-6-6z" />
+          <path d="M12 12L6 7M12 12l-6 5" />
+        </svg>
+      </div>
+
+      <div class="tray-icon">
+        <!-- sound -->
+        <svg viewBox="0 0 24 24">
+          <path d="M3 9v6h4l5 5V4L7 9H3z" />
+          <path d="M16 9c1.5 1.5 1.5 4.5 0 6" />
+          <path d="M19 6c3 3 3 9 0 12" />
+        </svg>
+      </div>
+
+      <div class="tray-icon">
+        <!-- battery -->
+        <svg viewBox="0 0 28 14">
+          <rect x="1" y="1" width="22" height="12" rx="2" />
+          <rect x="24" y="4" width="3" height="6" rx="1" />
+          <rect x="3" y="3" width="14" height="8" rx="1" />
+        </svg>
+      </div>
+      <div id="taskTime"></div>
+    </div>
+
+      <span id="time"></span>
+    </div>
+  </div>
+
+  <div id="overlay"></div>
+
+  <script src="script.js"></script>
+
+  
+
+</body>
+</html>
