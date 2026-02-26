@@ -36,6 +36,13 @@ document.addEventListener('mousedown', (e) => {
   bringToFront(win);
 });
 
+document.addEventListener('pointerdown', (e) => {
+  const win = e.target.closest('.window');
+  if (!win) return;
+  if (win.dataset && win.dataset.minimized === 'true') return;
+  bringToFront(win);
+});
+
 
 
 
@@ -360,8 +367,93 @@ const taskTime = document.getElementById('taskTime');
 const overlay = document.getElementById('overlay');
 const taskbar = document.getElementById('taskbar');
 const appsGrid = document.getElementById("appsGrid");
+const MOBILE_VIEWPORT_MAX = 900;
+let activeDragPointerId = null;
 
 startMenu.style.display = "none";
+
+function isMobileViewport() {
+  return window.matchMedia(`(max-width: ${MOBILE_VIEWPORT_MAX}px)`).matches;
+}
+
+function clampValue(value, min, max) {
+  return Math.min(Math.max(value, min), max);
+}
+
+function fitWindowToViewport(win, options = {}) {
+  if (!win || !win.classList || !win.classList.contains('window')) return;
+  if (win.classList.contains('my-heart-window')) return;
+
+  const isMobile = isMobileViewport();
+  const margin = isMobile ? 8 : 0;
+  const taskbarHeight = taskbar ? taskbar.offsetHeight : 56;
+  const maxWidth = Math.max(240, window.innerWidth - margin * 2);
+  const maxHeight = Math.max(220, window.innerHeight - taskbarHeight - margin * 2);
+
+  if (isMobile) {
+    win.style.maxWidth = `${maxWidth}px`;
+    win.style.maxHeight = `${maxHeight}px`;
+
+    const beforeRect = win.getBoundingClientRect();
+    if (beforeRect.width > maxWidth) win.style.width = `${maxWidth}px`;
+    if (beforeRect.height > maxHeight) win.style.height = `${maxHeight}px`;
+  }
+
+  const rect = win.getBoundingClientRect();
+  let left = Number.parseFloat(win.style.left);
+  let top = Number.parseFloat(win.style.top);
+
+  if (!Number.isFinite(left)) left = rect.left;
+  if (!Number.isFinite(top)) top = rect.top;
+
+  if (options.centerOnMobile && isMobile) {
+    left = (window.innerWidth - rect.width) / 2;
+    top = (window.innerHeight - taskbarHeight - rect.height) / 2;
+  }
+
+  const maxLeft = Math.max(margin, window.innerWidth - rect.width - margin);
+  const maxTop = Math.max(margin, window.innerHeight - taskbarHeight - rect.height - margin);
+
+  left = clampValue(left, margin, maxLeft);
+  top = clampValue(top, margin, maxTop);
+
+  win.style.left = `${left}px`;
+  win.style.top = `${top}px`;
+}
+
+function fitAllWindowsToViewport() {
+  document.querySelectorAll('.window').forEach(win => fitWindowToViewport(win));
+}
+
+function installWindowViewportSync() {
+  if (!desktop || typeof MutationObserver === 'undefined') return;
+
+  const observer = new MutationObserver((mutations) => {
+    mutations.forEach((mutation) => {
+      mutation.addedNodes.forEach((node) => {
+        if (!node || node.nodeType !== 1) return;
+
+        const newWindows = [];
+        if (node.classList && node.classList.contains('window')) {
+          newWindows.push(node);
+        }
+        if (typeof node.querySelectorAll === 'function') {
+          newWindows.push(...node.querySelectorAll('.window'));
+        }
+
+        newWindows.forEach((win) => {
+          requestAnimationFrame(() => fitWindowToViewport(win, { centerOnMobile: true }));
+        });
+      });
+    });
+  });
+
+  observer.observe(desktop, { childList: true });
+  window.addEventListener('resize', fitAllWindowsToViewport);
+  window.addEventListener('orientationchange', fitAllWindowsToViewport);
+}
+
+installWindowViewportSync();
 
 
 
@@ -503,29 +595,14 @@ function makeWindowDraggable(win) {
 
   if (!header) return;
 
-  let isDragging = false;
-  let offsetX = 0;
-  let offsetY = 0;
-
   header.addEventListener('mousedown', (e) => {
-    isDragging = true;
-
     const rect = win.getBoundingClientRect();
-    offsetX = e.clientX - rect.left;
-    offsetY = e.clientY - rect.top;
-
-    win.style.zIndex = ++zIndexCounter;
-  });
-
-  document.addEventListener('mousemove', (e) => {
-    if (!isDragging) return;
-
-    win.style.left = `${e.clientX - offsetX}px`;
-    win.style.top = `${e.clientY - offsetY}px`;
-  });
-
-  document.addEventListener('mouseup', () => {
-    isDragging = false;
+    activeDragWindow = win;
+    dragOffsetX = e.clientX - rect.left;
+    dragOffsetY = e.clientY - rect.top;
+    activeDragPointerId = null;
+    win.classList.add('dragging');
+    bringToFront(win);
   });
 }
 
@@ -2538,45 +2615,68 @@ function focusWindow(win) {
   });
 }
 
-//drag logic 
-document.addEventListener('mousemove', (e) => {
+// Drag logic for mouse + touch via Pointer Events
+document.addEventListener('pointerdown', (e) => {
+  const header = e.target.closest('.window-header');
+  if (!header) return;
+  if (e.pointerType === 'mouse' && e.button !== 0) return;
+  if (e.target.closest('.window-actions, .close-btn, .minimize-btn, button, input, textarea, select, iframe')) return;
+
+  const win = header.closest('.window');
+  if (!win || win.dataset.minimized === 'true' || win.classList.contains('my-heart-window')) return;
+
+  const rect = win.getBoundingClientRect();
+  activeDragWindow = win;
+  activeDragPointerId = e.pointerId;
+  dragOffsetX = e.clientX - rect.left;
+  dragOffsetY = e.clientY - rect.top;
+
+  win.classList.add('dragging');
+  bringToFront(win);
+
+  if (typeof header.setPointerCapture === 'function') {
+    try {
+      header.setPointerCapture(e.pointerId);
+    } catch (err) {
+      // ignore if capture is unsupported for this pointer
+    }
+  }
+
+  e.preventDefault();
+}, { passive: false });
+
+document.addEventListener('pointermove', (e) => {
   if (!activeDragWindow) return;
-  
-  // Calculate new position
+  if (activeDragPointerId !== null && e.pointerId !== activeDragPointerId) return;
+
   let x = e.clientX - dragOffsetX;
   let y = e.clientY - dragOffsetY;
-  
-  // Get window dimensions
-  const winRect = activeDragWindow.getBoundingClientRect();
-  const winWidth = winRect.width || 360;  // Fallback width
-  const winHeight = winRect.height || 540; // Fallback height
-  
-  // Calculate maximum allowed position
-  const maxX = window.innerWidth - winWidth;
-  const maxY = window.innerHeight - winHeight;
-  
-  // Apply boundaries
-  x = Math.max(0, Math.min(x, maxX));
-  y = Math.max(0, Math.min(y, maxY));
-  
-  // Apply new position
-  activeDragWindow.style.left = x + 'px';
-  activeDragWindow.style.top = y + 'px';
-  
-  // Prevent text selection while dragging
-  e.preventDefault();
-});
 
-document.addEventListener('mouseup', () => {
+  const rect = activeDragWindow.getBoundingClientRect();
+  const margin = isMobileViewport() ? 8 : 0;
+  const taskbarHeight = taskbar ? taskbar.offsetHeight : 56;
+
+  const maxX = Math.max(margin, window.innerWidth - rect.width - margin);
+  const maxY = Math.max(margin, window.innerHeight - taskbarHeight - rect.height - margin);
+
+  x = clampValue(x, margin, maxX);
+  y = clampValue(y, margin, maxY);
+
+  activeDragWindow.style.left = `${x}px`;
+  activeDragWindow.style.top = `${y}px`;
+
+  e.preventDefault();
+}, { passive: false });
+
+function stopActiveDrag() {
   if (activeDragWindow) {
     activeDragWindow.classList.remove('dragging');
   }
   activeDragWindow = null;
-}); 
+  activeDragPointerId = null;
+}
 
-
-
-
-
+document.addEventListener('pointerup', stopActiveDrag);
+document.addEventListener('pointercancel', stopActiveDrag);
 
 

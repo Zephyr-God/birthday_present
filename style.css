@@ -535,6 +535,7 @@ body {
   cursor: move;
   font-size: 14px;
   pointer-events: auto;
+  touch-action: none;
   align-items: center;
   gap: 4px;
 }
@@ -2436,4 +2437,52 @@ body.start-open #desktop-wrapper::before {
 /* If you want hover-based heart animation as well */
 .date-ideas-window .heart-btn:hover {
   animation: heart 900ms ease-in-out both;
+}
+
+.window.dragging {
+  user-select: none;
+}
+
+@media (max-width: 900px) {
+  #desktop {
+    padding: 12px;
+    padding-bottom: 74px;
+  }
+
+  .desktop-icons {
+    grid-template-columns: repeat(auto-fill, 72px);
+    gap: 14px;
+  }
+
+  .window {
+    width: calc(100vw - 16px);
+    max-width: calc(100vw - 16px);
+    max-height: calc(100vh - 72px);
+  }
+
+  .window-header {
+    padding: 10px;
+  }
+
+  #taskbar {
+    height: 60px;
+    padding: 0 8px;
+  }
+
+  #taskbar-left {
+    gap: 8px;
+    min-width: 0;
+  }
+
+  #taskApps {
+    display: flex;
+    gap: 6px;
+    overflow-x: auto;
+    max-width: 48vw;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .system-tray {
+    display: none;
+  }
 }
