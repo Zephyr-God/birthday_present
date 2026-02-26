@@ -1598,9 +1598,11 @@ function openWindow(title, fromFileManager = false) {
       body.className = 'window-body';
       body.style.display = 'flex';
       body.style.flex = '1 1 auto';
+      body.style.minHeight = '0';
       body.style.gap = '12px';
 
       const sidebar = document.createElement('div');
+      sidebar.className = 'll-sidebar';
       sidebar.style.width = '40%';
       sidebar.style.borderRight = '1px solid rgba(0,0,0,0.05)';
       sidebar.style.paddingRight = '8px';
@@ -1609,9 +1611,12 @@ function openWindow(title, fromFileManager = false) {
       sidebar.style.gap = '6px';
 
       const contentArea = document.createElement('div');
+      contentArea.className = 'll-content-area';
       contentArea.style.flex = '1';
+      contentArea.style.minHeight = '0';
       contentArea.style.paddingLeft = '4px';
       contentArea.style.overflowY = 'auto';        // scrollable for long letters
+      contentArea.style.WebkitOverflowScrolling = 'touch';
       //contentArea.style.whiteSpace = 'pre-wrap';
       contentArea.style.fontSize = '15px';         // larger font for easier reading
       contentArea.style.lineHeight = '1.7';        // nicer line spacing
@@ -2678,5 +2683,4 @@ function stopActiveDrag() {
 
 document.addEventListener('pointerup', stopActiveDrag);
 document.addEventListener('pointercancel', stopActiveDrag);
-
 

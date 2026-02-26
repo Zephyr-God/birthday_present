@@ -1636,6 +1636,13 @@ body.start-open #desktop-wrapper::before {
 .love-letters-window .window-body {
   flex: 1 1 auto;
   background: #fff7fb;
+  min-height: 0;
+}
+
+.love-letters-window .ll-content-area {
+  min-height: 0;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .love-letters-window .window-body p {
@@ -2484,5 +2491,13 @@ body.start-open #desktop-wrapper::before {
 
   .system-tray {
     display: none;
+  }
+
+  .love-letters-window .window-body {
+    min-height: 0;
+  }
+
+  .love-letters-window .ll-content-area {
+    overflow-y: auto;
   }
 }
